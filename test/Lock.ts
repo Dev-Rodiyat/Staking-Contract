@@ -17,7 +17,7 @@ describe("Lock", function () {
     const lockedAmount = ONE_GWEI;
     const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
 
-    // Contracts are deployed using the first signer/account by default
+    // Contracts are deployed using the first signer/account by default 
     const [owner, otherAccount] = await hre.ethers.getSigners();
 
     const Lock = await hre.ethers.getContractFactory("Lock");

@@ -5,16 +5,16 @@ import "./interfaces/IERC20.sol";
 
 contract StakingContract {
 
-    IERC20 public stakingToken;
+    IERC20 public stakeToken;
     IERC20 public rewardToken;
     address public owner;
 
     uint256 public totalStaked;
-    uint256 public rewardRate; // reward tokens per second
+    uint256 public rewardRate; // reward tokens per second 
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
-    mapping(address => uint256) public userStaked;
+    mapping(address => uint256) public userStaked; 
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
@@ -22,8 +22,8 @@ contract StakingContract {
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);
 
-    constructor(address _stakingToken, address _rewardToken, uint256 _rewardRate) {
-        stakingToken = IERC20(_stakingToken);
+    constructor(address _stakeToken, address _rewardToken, uint256 _rewardRate) {
+        stakeToken = IERC20(_stakeToken);
         rewardToken = IERC20(_rewardToken);
         owner = msg.sender;
         rewardRate = _rewardRate;
@@ -31,6 +31,7 @@ contract StakingContract {
     }
 
     modifier updateReward(address _address) {
+        require(msg.sender != address(0), "Invalid sender address");
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = block.timestamp;
 
@@ -49,19 +50,18 @@ contract StakingContract {
         return rewardPerTokenStored + ((block.timestamp - lastUpdateTime) * rewardRate * 1e18 / totalStaked);
     }
 
-    // rewards earned by a user
     function earned(address _address) public view returns (uint256) {
         return (userStaked[_address] * (rewardPerToken() - userRewardPerTokenPaid[_address]) / 1e18) + rewards[_address];
     }
 
     // stake tokens
     function stake(uint256 amount) external updateReward(msg.sender) {
-        require(amount > 0, "Cannot stake 0");
+        require(amount > 0, "Amount must be greater than zero");
 
         totalStaked += amount;
         userStaked[msg.sender] += amount;
 
-        require(stakingToken.transferFrom(msg.sender, address(this), amount), "Stake transfer failed");
+        require(stakeToken.transferFrom(msg.sender, address(this), amount), "Stake transfer failed");
 
         emit Staked(msg.sender, amount);
     }
@@ -74,7 +74,7 @@ contract StakingContract {
         totalStaked -= amount;
         userStaked[msg.sender] -= amount;
 
-        require(stakingToken.transfer(msg.sender, amount), "Withdraw transfer failed");
+        require(stakeToken.transfer(msg.sender, amount), "Withdraw transfer failed");
 
         emit Withdrawn(msg.sender, amount);
     }
@@ -88,12 +88,6 @@ contract StakingContract {
         require(rewardToken.transfer(msg.sender, reward), "Reward transfer failed");
 
         emit RewardPaid(msg.sender, reward);
-    }
-
-    // withdraw all staked tokens and claim rewards
-    function exit() external {
-        withdraw(userStaked[msg.sender]);
-        claimReward();
     }
 
     // only owner can update reward rate

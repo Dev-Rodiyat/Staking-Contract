@@ -3,12 +3,11 @@ import { expect } from "chai";
 import hre from "hardhat";
 
 describe("StakeToken", function () {
-  // Setup fixture function
+
   async function deployStakeTokenFixture() {
     const tokenName = "Roddy Token";
     const tokenSymbol = "ROD";
 
-    // get accounts from ethers
     const [owner, account1, account2, account3] = await hre.ethers.getSigners();
 
     const StakeToken = await hre.ethers.getContractFactory("StakeToken");
